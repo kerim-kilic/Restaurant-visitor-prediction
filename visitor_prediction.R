@@ -72,7 +72,7 @@ create_training_data <- function()
 
 create_test_data <- function()
 {
-  prediction_format <- read.csv("project_submission.csv",sep=",")
+  prediction_format <- read.csv("prediction_format.csv",sep=",")
   test <- str_split_fixed(prediction_format$ID, " _ ", 2)
   b <- data.frame(test[,1], test[,2])
   colnames(b) <- c("rest_id","calendar_date")
@@ -83,7 +83,16 @@ create_test_data <- function()
   test$reserves <- rep(0, times=15770)
   test$visit_date <- as.Date(test$visit_date, format = "%Y-%m-%d", origin = "1970-01-01")
   test$ID <- as.character(test$ID)
-  return(test)
+  air_reserve_data <- get_data("air_reserve")
+  air_reserve_data$visit_date <- as.Date(air_reserve_data$visit_datetime )
+  test_data_reserves <- left_join(test, air_reserve_data %>% select(ID, reserve_visitors, visit_date), by= c("ID", "visit_date"))
+  test_data_reserves[is.na(test_data_reserves)] <- 0
+   test_data <- test_data_reserves %>%
+     group_by(ID, visit_date)%>%
+     mutate(reserves = sum(reserve_visitors))%>%
+     select(!reserve_visitors)%>%
+     unique()
+  return(test_data)
 }
 
 generate_predictions <- function(model,test_data)
