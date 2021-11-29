@@ -1,4 +1,6 @@
 library(RMySQL)
+library(stringr)
+library(plyr)
 
 get_data <- function(table)
 {
@@ -31,6 +33,30 @@ get_data <- function(table)
     "date_info"= return(date_info_data),  
     "restaurant_info"= return(restaurant_info_data)
   )
+}
+
+create_training_data <- function()
+{
+  # Create function to generate training data
+}
+
+create_test_data <- function()
+{
+  prediction_format <- read.csv("project_submission.csv",sep=",")
+  test <- str_split_fixed(prediction_format$ID, " _ ", 2)
+  b <- data.frame(test[,1], test[,2])
+  colnames(b) <- c("rest_id","calendar_date")
+  date_info_data <- get_data("date_info")
+  test <- join(b, date_info_data,type = "left")
+  colnames(test) <- c("ID","visit_date","day_of_week","holiday_flg")
+  test$visitors <- rep(0, times=15770)
+  test$visit_date <- as.Date(test$visit_date, format = "%Y-%m-%d", origin = "1970-01-01")
+  return(test)
+}
+
+generate_predictions <- function()
+{
+  # Create function to generate predictions
 }
 
 air_reserve_data <- get_data("air_reserve")
