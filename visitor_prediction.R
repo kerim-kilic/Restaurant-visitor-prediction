@@ -86,12 +86,19 @@ create_test_data <- function()
   return(test)
 }
 
-generate_predictions <- function()
+generate_predictions <- function(model,test_data)
 {
-  # Create function to generate predictions
+  prediction_format <- read.csv("prediction_format.csv",sep=",")
+  predictions <- predict(model, newdata = test_data)
+  predictions <- round(predictions)
+  prediction_format$visitors <- predictions
+  #write.csv(prediction_format,"C:\\Users\\Kerim\\Desktop\\prediction2.csv", row.names = FALSE)
+  return(prediction_format)
 }
 
 training_data_set <- create_training_data()
 test_data_set <- create_test_data()
 model <- lm(visitors~ ID+ visit_date+day_of_week+holiday_flg+reserves, data = training_data_set)
-predictions <- predict(model, newdata = test_data_set)
+summary(model)
+
+prediction <- generate_predictions(model,test_data_set)
